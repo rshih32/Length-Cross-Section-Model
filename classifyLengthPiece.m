@@ -1,10 +1,11 @@
-function [ classification ] = classifyLengthPiece( queryall, queryidentifier, querycombo, template, templatecombo,  qtprune, strokerelation )
+function [ classification ] = classifyLengthPiece( queryall, queryidentifier, querycombo, template, templatecombo,  qtprune, strokerelation ,votes,matchpercent)
 %CLASSIFYLENGTHPIECE Summary of this function goes here
 %   Detailed explanation goes here
+
+    
     queryidentifier = queryidentifier(queryidentifier~=0);
     classification = ones(1, length(queryidentifier))*2;
     index=1;
-    
     %if matching a query to an emptyspace, classify all grouped points as
     %extra
     if isempty(template)
@@ -17,35 +18,51 @@ function [ classification ] = classifyLengthPiece( queryall, queryidentifier, qu
             end
         end
     %if query consists of a single point, check for missing strokes
+    
     elseif isempty(querycombo)
+        
         if(~isempty(queryidentifier))
-
+          
+            
             found=false;
             queryindex=1;
             while ~found
-                actualclass = strokerelation(queryidentifier(index));
-                %strokes that were used in the query matching
-                if(actualclass==1 || actualclass==0)
+                if(index > length(queryidentifier))
                     found=true;
-                    classification(index) = 0;
-                    queryindex=index;
+                    queryindex=1;
+                    classification(1)=-1;
+                else
+                    actualclass = strokerelation(queryidentifier(index));
+                    %strokes that were used in the query matching
+                    if(actualclass==1 || actualclass==0)
+                        found=true;
+                        classification(index) = 0;
+                        queryindex=index;
+                    end
+                    index=index+1;
                 end
-                index=index+1;
             end
 
             for i=1:length(queryidentifier)
                 sectionsize=0;
-                if(i<queryindex)
-                    sectionsize=sum(queryall(i:queryindex-1));
-                elseif(i>queryindex)
-                    sectionsize=sum(queryall(queryindex:i-1));
-                end
+                if(i ~= queryindex)
+                    if(i<queryindex)
+                        sectionsize=sum(queryall(i:queryindex-1));
+                    elseif(i>queryindex)
+                        sectionsize=sum(queryall(queryindex:i-1));
+                    end
 
-                for j=1:length(template)
+                    for j=1:length(template)
 
-                    if(sectionsize/template(j) <1.2 && sectionsize/template(j) > .8)
 
-                        classification(i)=-1;
+                        if(votes < 0.00000001) 
+                            if(abs(queryindex-i) <= length(template))
+                                classification(i)=-1;
+                            end
+                        elseif(sectionsize/template(j) <1.2*(1/matchpercent) && sectionsize/template(j) > .8*matchpercent)
+
+                            classification(i)=-1;
+                        end
                     end
                 end
             end
@@ -152,6 +169,7 @@ function [ classification ] = classifyLengthPiece( queryall, queryidentifier, qu
 
                     %identify the missing strokes in the current section
                     if(endsection && queryindex<=length(querycombo))
+                        
                         currdistance=0;
 
 
@@ -177,15 +195,18 @@ function [ classification ] = classifyLengthPiece( queryall, queryidentifier, qu
                                     classification(j) = -1;
                                     j=j+1;
                                 else
-
+                                    
                                     templatepieces=templatepieces+1;
+                                    
                                     templateindex=qtprune(3) + sum((templatecombo(1:templatecomboindex-1)+1))+templatepieces;
                                     templatedist = templatedist+template(templateindex);
+                                    j=j+1;
 
                                 end
                              else
                                 currdistance = currdistance+queryall(j);
                                 j=j+1;
+                                templatepieces=0;
                             end
 
                         end

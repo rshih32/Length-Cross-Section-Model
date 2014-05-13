@@ -5,7 +5,7 @@ function [ error] = errmeasure3( query, template )
     query(query==0)=[];
     template(template==0)=[];
     error = cell(5,1);
-    if(length(query>0) && length(template) > 0)
+    if(length(query)>0 && length(template) > 0)
         [qsval, qsindex] = sort(query, 'descend');
         [tsval, tsindex] = sort(template, 'descend');
         if(length(query) > 5)

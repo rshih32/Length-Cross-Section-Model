@@ -1,4 +1,4 @@
-function [ matchvotes,matchstartintervalscale, qtcomboinfo] = matchlentemplatesbrute2( querytemplate, fullrotationtemplates, rotation )
+function [ matchvotes,startintervalscalematch, qtcomboinfo] = matchlentemplatesbrute2( querytemplate, fullrotationtemplates, rotation )
 %MATCHLENTEMPLATES Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -24,8 +24,14 @@ stepsize = (maxscale-minscale)/(scaleresolution-1);
     
 [fullrowdim,fullcoldim, numrotations] = size(fullrotationtemplates);
 matchvotes = zeros(1,numrotations);
-matchstartintervalscale = zeros(3,numrotations);
+startintervalscalematch = zeros(4,numrotations);
 [numslices,querycoldim] = size(querytemplate);
+
+nonzeroquery=0;
+if ~ isempty(querytemplate)
+    nonzeroquery = nnz(querytemplate(:,1));
+end
+
 
 qtcomboinfo = cell(numrotations, numslices, 6);
 
@@ -38,6 +44,8 @@ x = find(any(template,2),1,'first'):find(any(template,2),1,'last');
 y = find(any(template),1,'first'):find(any(template),1,'last');
 trimmedtemplate = template(x, y);
 [rowdim,coldim] = size(trimmedtemplate);
+
+fullinterval = floor(rowdim/numslices);
 
 padrowdim=int32(rowdim*1.5);
 templatestart = int32(rowdim*.25);
@@ -65,7 +73,7 @@ for theslice=1:numslices
 
             cols = size(errmeasures,2);
 
-
+            
 
             for col=1:cols
                 scaleresult = errmeasures{1,col};
@@ -119,23 +127,27 @@ for interval = 1:maxinterval
 
     for startpoint = 1:rowdim-interval*numslices+1
 
-        scalevoting = zeros(1,scaleresolution+10);
+        scalevoting = zeros(1,scaleresolution+10)+.000000001;
+        unmatchedcount = 0;
         for theslice=1:numslices
 
 
             scalevoting = scalevoting + savedscalevoting{theslice, startpoint+(theslice-1)*interval};
-
+            if(trimmedtemplate(startpoint+(theslice-1)*interval) == 0)
+                unmatchedcount = unmatchedcount + 1;
+            end
         end
         [topvote,index] = max(scalevoting);
 
-        topvote = topvote * parsing.gauss(interval/maxinterval,1,3/5);
+        topvote = topvote * parsing.gauss(interval/fullinterval,1,3/5) * parsing.gauss(unmatchedcount/numslices, 0, 3/5);
         if(topvote>mostvotes)
             bestscalevoting = scalevoting;
             mostvotes  = topvote;
             matchvotes(1,rotation) = mostvotes;
-            matchstartintervalscale(1,rotation)=startpoint;
-            matchstartintervalscale(2,rotation)=interval;
-            matchstartintervalscale(3,rotation)=exp((index-6)*stepsize + minscale);
+            startintervalscalematch(1,rotation)=startpoint;
+            startintervalscalematch(2,rotation)=interval;
+            startintervalscalematch(3,rotation)=exp((index-6)*stepsize + minscale);
+            startintervalscalematch(4,rotation) = nonzeroquery/numslices;
             for theslice=1:numslices
                 therow = startpoint+(theslice-1)*interval;
                 cbi = comboinfo(index, startpoint+(theslice-1)*interval, theslice, :);

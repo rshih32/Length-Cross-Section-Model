@@ -23,7 +23,7 @@ function [ votes,classresult, querytemplateall,querytemplatestrokeidentifierall 
 
     [querytemplate, querytemplateall, querytemplatestrokeidentifierall] = templatelengthspartial3(strokeidentifiersoverlay, strokeidentifiersoverlayall, numslices, strokerelation);
 
-    % querytemplate
+    
 %     querytemplateall
 %     querytemplatestrokeidentifierall
 %     parsing.viewLengthTemplateExtraMissing(querytemplateall, querytemplatestrokeidentifierall, strokerelation);
@@ -31,12 +31,12 @@ function [ votes,classresult, querytemplateall,querytemplatestrokeidentifierall 
 % querytemplateall
 
     %TODO remove missing strokes from the query
-
-    [matchvotes,matchstartintervalscale,qtcomboinfo] = matchlentemplatesbrute2( querytemplate, lentemplate, rotation );
+  
+    [matchvotes,startintervalscalematch,qtcomboinfo] = matchlentemplatesbrute2( querytemplate, lentemplate, rotation );
     classresult= matchvotes(rotation);
     
-
-%      startintervalscale = matchstartintervalscale(:,rotation)
+    
+%      startintervalscale = startintervalscalematch(:,rotation)
 %      parsing.viewMatchedLengthTemplate(querytemplate, lentemplate(:,:,rotation), startintervalscale(1), startintervalscale(2), startintervalscale(3));
 
 
@@ -47,17 +47,17 @@ function [ votes,classresult, querytemplateall,querytemplatestrokeidentifierall 
     votes = zeros(length(strokerelation), 4);
     
     classifications = zeros(numslices, size(querytemplateall,2));
-
+    
     for i=1:numslices
 %          i
     %      querytemplate(i,:)
     %      querytemplateall(i,:)
-    %      querytemplateall(i,:)*matchstartintervalscale(3,rotation)
+    %      querytemplateall(i,:)*startintervalscalematch(3,rotation)
     %      qtcomboinfo{rotation,i,6}
     %      qtcomboinfo{rotation,i,4}
     %      qtcomboinfo{rotation,i,5}
-        
-         classification = classifyLengthPiece( querytemplateall(i,:)*matchstartintervalscale(3,rotation), querytemplatestrokeidentifierall(i,:), qtcomboinfo{rotation,i,3}, qtcomboinfo{rotation,i,6}, qtcomboinfo{rotation,i,4},  qtcomboinfo{rotation,i,5}, strokerelation );
+      
+         classification = classifyLengthPiece( querytemplateall(i,:)*startintervalscalematch(3,rotation), querytemplatestrokeidentifierall(i,:), qtcomboinfo{rotation,i,3}, qtcomboinfo{rotation,i,6}, qtcomboinfo{rotation,i,4},  qtcomboinfo{rotation,i,5}, strokerelation,classresult,startintervalscalematch(4,rotation) );
          for j=1:length(classification)
              votes(querytemplatestrokeidentifierall(i,j),classification(j) + 2) = votes(querytemplatestrokeidentifierall(i,j),classification(j) + 2)  + 1;
          end

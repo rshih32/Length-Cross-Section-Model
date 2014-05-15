@@ -48,7 +48,7 @@ function [ votes,classresult, querytemplateall,querytemplatestrokeidentifierall 
     
     classifications = zeros(numslices, size(querytemplateall,2));
     
-    for i=1:numslices
+    for i=1:size(querytemplateall,1)
 %          i
     %      querytemplate(i,:)
     %      querytemplateall(i,:)

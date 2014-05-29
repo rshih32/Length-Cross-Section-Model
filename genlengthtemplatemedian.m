@@ -12,6 +12,7 @@ function [lengthtemplate ] = genlengthtemplatemedian(firstexample,examples)
     weightmatrix = zeros(templatedim,templatedim,3);
     
     example = zeros(templatedim,templatedim,3);
+    
     rawstrokes=firstexample;
     
     temp = parsing.fill(rawstrokes);
@@ -30,13 +31,29 @@ function [lengthtemplate ] = genlengthtemplatemedian(firstexample,examples)
     temp = parsing.fill(rawstrokes);
     xfilled = temp(1,:);
     yfilled = temp(2,:);
-
+    
     for j=1:length(xfilled)
-        example(yfilled(j)+templatedim/2,xfilled(j)+templatedim/2,  1) = 1;
+        ytmp = yfilled(j)+templatedim/2;
+        xtmp = xfilled(j)+templatedim/2;
+        
+        if(ytmp > 300)
+            ytmp = 300;
+        elseif(ytmp <= 0)
+            ytmp = 1;
+        end
+        
+        if(xtmp > 300)
+            xtmp = 300;
+        elseif(xtmp <= 0)
+            xtmp = 1;
+        end
+        
+        example(ytmp, xtmp, 1) = 1;
+        %example(yfilled(j)+templatedim/2,xfilled(j)+templatedim/2,  1) = 1;
     end
-    
-    template = example;
-    
+
+    template = example; 
+
     edges = template(:,:,1);
     
     [IDX2,D2] = knnsearch([double(yfilled+templatedim/2)',double(xfilled+templatedim/2)'],templatedimensions);
@@ -49,13 +66,15 @@ function [lengthtemplate ] = genlengthtemplatemedian(firstexample,examples)
     
     %fill the rest
     for i=1:length(examples)
-        i
+        %i
         templengthtemplate = zeros(templatedim,templatedim,numrotations);
         bestrotation = 1;
         example = zeros(templatedim,templatedim,3);
         rawstrokes=examples{i};
         chosenmatrix=[];
         dist = intmax;
+   
+        
         [iS,jS,sS] = find(sparse(template(:,:,1).*weightmatrix(:,:,1)));
         [iE,jE,sE] = find(sparse(edges));
         for rotation=1:numrotations
@@ -87,8 +106,24 @@ function [lengthtemplate ] = genlengthtemplatemedian(firstexample,examples)
             yfilled = temp(2,:);
             pointmatrix = zeros(templatedim,templatedim);
             for j=1:length(xfilled)
-                    
-                pointmatrix(yfilled(j)+templatedim/2,xfilled(j)+templatedim/2) = 1;
+                ytmp = yfilled(j)+templatedim/2;
+                xtmp = xfilled(j)+templatedim/2;
+        
+                % bounds check, and force bounds
+                if(ytmp > 300)
+                    ytmp = 300;
+                elseif(ytmp <= 0)
+                    ytmp = 1;
+                end
+        
+                if(xtmp > 300)
+                    xtmp = 300;
+                elseif(xtmp <= 0)
+                    xtmp = 1;
+                end
+                
+                pointmatrix(ytmp, xtmp) = 1;
+                %pointmatrix(yfilled(j)+templatedim/2,xfilled(j)+templatedim/2) = 1;
             end
             templengthtemplate(:,:,rotation) = pointmatrix;
             searchMatrix = [double(yfilled+templatedim/2)',double(xfilled+templatedim/2)'];

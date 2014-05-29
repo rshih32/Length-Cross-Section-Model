@@ -66,22 +66,35 @@ maxcontributor = zeros(rowdim, numslices, scaleresolution+10);
 comboinfo = cell(scaleresolution+10, rowdim, numslices, 6);
 tic
 for theslice=1:numslices
+    
     for therow=1:rowdim
         tempscalevoting = zeros(1,scaleresolution+10);
-        if(therow>=templatestart && therow <=templateend && any(newquerytemplate(theslice,:)))
+        
+       
+        if(therow>=templatestart && therow <=templateend && any(newquerytemplate(theslice,:)) && any(trimmedtemplate(therow,:))) %FIXED
             errmeasures=errmeasure3(newquerytemplate(theslice,:), trimmedtemplate(therow,:));
-
             cols = size(errmeasures,2);
 
             
-
+            %{
+            fprintf('=============COLS=============')
+            fprintf('newquerytemplate - the slice')
+            newquerytemplate(theslice,:)
+            newquerytemplate
+            fprintf('trimmedtemplate - therow')
+            trimmedtemplate(therow,:)
+            trimmedtemplate
+            errmeasure3(newquerytemplate(theslice,:), trimmedtemplate(therow,:))
+            %}
+            
+            
             for col=1:cols
                 scaleresult = errmeasures{1,col};
                 querymod = errmeasures{2,col};
                 templatemod = errmeasures{3,col};
                 querycombo = errmeasures{4,col};
                 templatecombo = errmeasures{5,col};
-                qtprune = errmeasures{6,col};
+                qtprune = errmeasures{6,col}; 
                 totalpieces = length(querycombo) + length(templatecombo);
                 percentunmodified = (totalpieces-sum(querycombo)-sum(templatecombo));
                 %cols 2 and 3 have 1 piece of the template removed
@@ -124,14 +137,13 @@ end
 toc
 
 for interval = 1:maxinterval
-
+    
     for startpoint = 1:rowdim-interval*numslices+1
-
+        %rowdim-interval*numslices+1
+        
         scalevoting = zeros(1,scaleresolution+10)+.000000001;
         unmatchedcount = 0;
         for theslice=1:numslices
-
-
             scalevoting = scalevoting + savedscalevoting{theslice, startpoint+(theslice-1)*interval};
             if(trimmedtemplate(startpoint+(theslice-1)*interval) == 0)
                 unmatchedcount = unmatchedcount + 1;
@@ -148,7 +160,7 @@ for interval = 1:maxinterval
             startintervalscalematch(2,rotation)=interval;
             startintervalscalematch(3,rotation)=exp((index-6)*stepsize + minscale);
             startintervalscalematch(4,rotation) = nonzeroquery/numslices;
-            for theslice=1:numslices
+            for theslice=1:numslices             
                 therow = startpoint+(theslice-1)*interval;
                 cbi = comboinfo(index, startpoint+(theslice-1)*interval, theslice, :);
                 offset = 1;
@@ -156,7 +168,10 @@ for interval = 1:maxinterval
                     comboinfo{index, startpoint+(theslice-1)*interval, theslice, 6}=trimmedtemplate(therow,:);
                     cbi = comboinfo(index, startpoint+(theslice-1)*interval, theslice, :);
                 elseif(therow>=templatestart && therow <=templateend)
+                    
                     while(isempty(cbi{1,1}))
+                        %cbi
+                        
                         if(index+offset <=length(scalevoting))
                             cbi = comboinfo(index+offset, startpoint+(theslice-1)*interval, theslice, :);
                         end
@@ -164,8 +179,12 @@ for interval = 1:maxinterval
                             cbi = comboinfo(index-offset, startpoint+(theslice-1)*interval, theslice, :);
                         end
                         offset=offset+1;
+                        
+                        %FORCE QUIT out of loop
+                        if(offset > 10000)
+                            break;
                     end
-                end
+                end             
                 qtcomboinfo(rotation, theslice,:) = cbi;
             end
         end

@@ -9,6 +9,7 @@ function [examples] = center( DOMexamples, substrokes, points, inputexamples)
         for j = 0: DOMsubstrokes.getLength - 1
             
             substrokeID = char(DOMsubstrokes.item(j).getFirstChild.getData);
+            %substrokeID
             DOMsubstroke = substrokes(substrokeID);
 
             DOMpoints = DOMsubstroke.getElementsByTagName('arg');

@@ -17,6 +17,8 @@ prefixsize = length('data/UCR_Gate_Study_Data');
 gfiles = parsing.getAllFiles('data/GateStyleStudyGrouped');
 gprefixsize = length('data/GateStyleStudyGrouped');
 
+
+
 ambilist=[];
 for f=1: length(gfiles)
     f

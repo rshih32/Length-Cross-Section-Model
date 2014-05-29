@@ -19,7 +19,7 @@ function [Hthreshholds, Vthreshholds] = learnclassthresh(examples, fulltemplates
         bestHThresh = zeros(1,numfilters);
         bestVThresh = zeros(1,numfilters);
         for rotation=1:numrotations
-            rotation
+            %rotation
             example = zeros(templatedim,templatedim,3);
             %for all angles
             angle = 2*pi/numrotations;
